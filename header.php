@@ -67,8 +67,11 @@
     <link rel="stylesheet" href="<?php get_site_url(); ?>/frontend/css/style-desktop.css">    
 	<meta name="google-site-verification" content="L-vdaCLPVqE4IAOqzQvaiA_XASllpMvDhX-OJtPASJQ">
 <style type="text/css" data-ymaps="css-modules">.ymaps-2-1-64-pictogramCircleIconContent{display: block; background-size: contain; width: 22px; height: 22px; background-repeat: no-repeat; position: absolute; top: -11px; left: -11px;}
-</style></head>
+</style>
+    <?php wp_head(); ?>
+</head>
 <body class="innerpage post<?php echo $post->ID; ?>">
+    <div class="woocommerce">
 	<div style="position:absolute; width:1px; height:1px; z-index:1; left: -2px; top: -2px; visibility: hidden; overflow: hidden;">
 		<script type="text/javascript">
 		document.write("<img src=\"https://counter.nn.ru/cgi-bin/counter.cgi?23415"+",,"+top.document.referrer+"\" width=\"1\" height=\"1\">");

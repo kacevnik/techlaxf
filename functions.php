@@ -1,4 +1,163 @@
 <?php
+
+add_action( 'after_setup_theme', 'woocommerce_support' );
+function woocommerce_support() {
+    add_theme_support( 'woocommerce' );
+    //add_theme_support( 'wc-product-gallery-lightbox' );
+    add_theme_support( 'wc-product-gallery-slider' );
+}
+
+remove_action( 'woocommerce_sidebar', 'woocommerce_get_sidebar', $priority = 10 );
+remove_action( 'woocommerce_before_main_content', 'woocommerce_breadcrumb', $priority = 20 );
+remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_title', $priority = 5 );
+remove_action( 'woocommerce_after_single_product_summary', 'woocommerce_output_product_data_tabs', $priority = 10 );
+remove_action( 'woocommerce_after_single_product_summary', 'woocommerce_output_related_products', $priority = 20 );
+remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_meta', $priority = 40 );
+
+
+add_action( 'woocommerce_single_product_summary', 'before_show_add_cart', $priority = 29);
+function before_show_add_cart(){
+    ?>
+    <div id="show_add_cart">
+        <img src="<?php echo get_template_directory_uri(); ?>/images/basket_popup_img.png">
+        <div class="show_add_cart">
+            <h3>Укажите метраж</h3>
+    <?php
+}
+
+add_action( 'woocommerce_single_product_summary', 'after_show_add_cart', $priority = 31);
+function after_show_add_cart(){
+    ?>
+        </div>
+    </div>
+    <?php
+}
+
+add_action( 'woocommerce_before_add_to_cart_quantity', 'before_quantity', $priority = 10);
+function before_quantity(){
+    ?>
+        <div class="before_quantity">
+    <?php
+}
+
+add_action( 'woocommerce_after_add_to_cart_quantity', 'after_quantity', $priority = 10);
+function after_quantity(){
+    ?>
+        <span class="kvd">М<sup>2</sup></span></div><div><a href="" class="from_catalog">К каталогу</a>
+    <?php
+}
+
+add_action( 'woocommerce_after_add_to_cart_button', 'before_button', $priority = 10);
+function before_button(){
+    ?>
+        </div>
+    <?php
+}
+
+add_action('wp_print_styles', 'add_styles'); // приклеем ф-ю на добавление стилей в хедер
+if (!function_exists('add_styles')) { // если ф-я уже есть в дочерней теме - нам не надо её определять
+    function add_styles() { // добавление стилей
+        if(is_admin()) return false; // если мы в админке - ничего не делаем
+            wp_enqueue_style( 'fancybox', get_template_directory_uri() . '/css/jquery.fancybox.min.css', array());
+            wp_enqueue_style( 'owl-carusel', get_template_directory_uri() . '/css/owl.carousel.min.css', array());
+            wp_enqueue_style( 'main', get_template_directory_uri() . '/css/style.css', array());
+    }
+}
+
+add_action('wp_footer', 'add_scripts'); // приклеем ф-ю на добавление скриптов в футер
+if (!function_exists('add_scripts')) { // если ф-я уже есть в дочерней теме - нам не надо её определять
+    function add_scripts() { // добавление скриптов
+        if(is_admin()) return false; // если мы в админке - ничего не делаем
+        wp_enqueue_script("jquery");
+        wp_enqueue_script('fancybox', get_template_directory_uri().'/js/jquery.fancybox.min.js','','',true); 
+        wp_enqueue_script('owl-carusel', get_template_directory_uri().'/js/owl.carousel.min.js','','',true); 
+        wp_enqueue_script('main', get_template_directory_uri().'/js/main.js','','',true); 
+    }
+}
+
+add_filter( 'woocommerce_breadcrumb_defaults', 'jk_change_breadcrumb_delimiter' );
+function jk_change_breadcrumb_delimiter( $defaults ) {
+    // Изменяем разделитель хлебных крошек с '/' на '>'
+    $defaults['delimiter'] = ' &gt; ';
+    return $defaults;
+}
+
+function custom_list_attr($type, $order){
+    global $product;
+    $attributes = $product->get_attributes();
+
+    if ( ! $attributes ) {
+        return;
+    }
+
+    foreach($attributes as $attribute){ 
+        global $product;
+            if($product -> is_type('variable')){
+            $var = $product->get_available_variations();
+        }
+        if($attribute->get_name() == $type && $type == 'variant'){
+            // echo '<pre>';
+            // print_r($var);
+            // echo '</pre>';
+            $attribute_values = $attribute->get_options();
+            if($order ==1){
+            echo '<ul class="ul_tabs">';
+
+            $count_tab = 1; 
+            foreach ( $attribute_values as $attribute_value ) { ?>
+                <li class="tab_default">
+                    <a href="#tab_<?php echo $count_tab; ?>" data-tabs="tab_<?php echo $attribute_value; ?>"<?php if($count_tab == 1){echo ' class="tab_active"';} ?>"><?php echo $attribute_value; ?></a>
+                </li>
+                <?php $count_tab++;
+            }
+            echo '</ul>';
+        }
+if($order == 2){
+            $count_tabs = 1; 
+            foreach($attribute_values as $attribute_value ){  ?>
+                <div id="tab_<?php echo $count_tabs; ?>" class="tabs_panel<?php if($count_tabs == 1){echo " show_tabs";} ?>">
+                    <div class="attributes_color_wrapper"><div class="owl-carousel attributes_color">
+                    <?php
+                    foreach ($var as $vars) {
+
+                        if($vars['attributes']['attribute_variant'] == $attribute_value){ ?>
+                            <div class="color_attribute" data-number-img="<?php echo $count_tab; ?>" data-select="<?php echo $vars['attributes']['attribute_color']; ?>">
+                                <img src="<?php echo $vars['image']['thumb_src']; ?>" alt="">
+                                <?php echo $vars['attributes']['attribute_color']; ?>
+                            
+                            </div>
+                        <?php }
+                    }
+?>
+                </div></div></div>
+                <?php $count_tabs++; 
+            }
+        }
+        }
+    }
+}
+
+function wc_get_gallery_image_html_2( $attachment_id, $main_image = false ) {
+    $flexslider        = (bool) apply_filters( 'woocommerce_single_product_flexslider_enabled', get_theme_support( 'wc-product-gallery-slider' ) );
+    $gallery_thumbnail = wc_get_image_size( 'gallery_thumbnail' );
+    $thumbnail_size    = apply_filters( 'woocommerce_gallery_thumbnail_size', array( $gallery_thumbnail['width'], $gallery_thumbnail['height'] ) );
+    $image_size        = apply_filters( 'woocommerce_gallery_image_size', $flexslider || $main_image ? 'woocommerce_single' : $thumbnail_size );
+    $full_size         = apply_filters( 'woocommerce_gallery_full_size', apply_filters( 'woocommerce_product_thumbnails_large_size', 'full' ) );
+    $thumbnail_src     = wp_get_attachment_image_src( $attachment_id, $thumbnail_size );
+    $full_src          = wp_get_attachment_image_src( $attachment_id, $full_size );
+    $image             = wp_get_attachment_image( $attachment_id, $image_size, false, array(
+        'title'                   => get_post_field( 'post_title', $attachment_id ),
+        'data-caption'            => get_post_field( 'post_excerpt', $attachment_id ),
+        'data-src'                => $full_src[0],
+        'data-large_image'        => $full_src[0],
+        'data-large_image_width'  => $full_src[1],
+        'data-large_image_height' => $full_src[2],
+        'class'                   => $main_image ? 'wp-post-image' : '',
+    ) );
+
+    return '<div data-thumb="' . esc_url( $thumbnail_src[0] ) . '" class="woocommerce-product-gallery__image">' . $image . '</div>';
+}
+
 /**
  * Twenty Sixteen functions and definitions
  *
@@ -29,7 +188,7 @@
  * Twenty Sixteen only works in WordPress 4.4 or later.
  */
 if ( version_compare( $GLOBALS['wp_version'], '4.4-alpha', '<' ) ) {
-	require get_template_directory() . '/inc/back-compat.php';
+    require get_template_directory() . '/inc/back-compat.php';
 }
 
 if ( ! function_exists( 'twentysixteen_setup' ) ) :
@@ -45,87 +204,87 @@ if ( ! function_exists( 'twentysixteen_setup' ) ) :
  * @since Twenty Sixteen 1.0
  */
 function twentysixteen_setup() {
-	/*
-	 * Make theme available for translation.
-	 * Translations can be filed in the /languages/ directory.
-	 * If you're building a theme based on Twenty Sixteen, use a find and replace
-	 * to change 'twentysixteen' to the name of your theme in all the template files
-	 */
-	load_theme_textdomain( 'twentysixteen', get_template_directory() . '/languages' );
+    /*
+     * Make theme available for translation.
+     * Translations can be filed in the /languages/ directory.
+     * If you're building a theme based on Twenty Sixteen, use a find and replace
+     * to change 'twentysixteen' to the name of your theme in all the template files
+     */
+    load_theme_textdomain( 'twentysixteen', get_template_directory() . '/languages' );
 
-	// Add default posts and comments RSS feed links to head.
-	add_theme_support( 'automatic-feed-links' );
+    // Add default posts and comments RSS feed links to head.
+    add_theme_support( 'automatic-feed-links' );
 
-	/*
-	 * Let WordPress manage the document title.
-	 * By adding theme support, we declare that this theme does not use a
-	 * hard-coded <title> tag in the document head, and expect WordPress to
-	 * provide it for us.
-	 */
-	add_theme_support( 'title-tag' );
+    /*
+     * Let WordPress manage the document title.
+     * By adding theme support, we declare that this theme does not use a
+     * hard-coded <title> tag in the document head, and expect WordPress to
+     * provide it for us.
+     */
+    add_theme_support( 'title-tag' );
 
-	/*
-	 * Enable support for custom logo.
-	 *
-	 *  @since Twenty Sixteen 1.2
-	 */
-	add_theme_support( 'custom-logo', array(
-		'height'      => 240,
-		'width'       => 240,
-		'flex-height' => true,
-	) );
+    /*
+     * Enable support for custom logo.
+     *
+     *  @since Twenty Sixteen 1.2
+     */
+    add_theme_support( 'custom-logo', array(
+        'height'      => 240,
+        'width'       => 240,
+        'flex-height' => true,
+    ) );
 
-	/*
-	 * Enable support for Post Thumbnails on posts and pages.
-	 *
-	 * @link http://codex.wordpress.org/Function_Reference/add_theme_support#Post_Thumbnails
-	 */
-	add_theme_support( 'post-thumbnails' );
-	set_post_thumbnail_size( 1200, 9999 );
+    /*
+     * Enable support for Post Thumbnails on posts and pages.
+     *
+     * @link http://codex.wordpress.org/Function_Reference/add_theme_support#Post_Thumbnails
+     */
+    add_theme_support( 'post-thumbnails' );
+    set_post_thumbnail_size( 1200, 9999 );
 
-	// This theme uses wp_nav_menu() in two locations.
-	register_nav_menus( array(
-		'primary' => __( 'Primary Menu', 'twentysixteen' ),
-		'social'  => __( 'Social Links Menu', 'twentysixteen' ),
-	) );
+    // This theme uses wp_nav_menu() in two locations.
+    register_nav_menus( array(
+        'primary' => __( 'Primary Menu', 'twentysixteen' ),
+        'social'  => __( 'Social Links Menu', 'twentysixteen' ),
+    ) );
 
-	/*
-	 * Switch default core markup for search form, comment form, and comments
-	 * to output valid HTML5.
-	 */
-	add_theme_support( 'html5', array(
-		'search-form',
-		'comment-form',
-		'comment-list',
-		'gallery',
-		'caption',
-	) );
+    /*
+     * Switch default core markup for search form, comment form, and comments
+     * to output valid HTML5.
+     */
+    add_theme_support( 'html5', array(
+        'search-form',
+        'comment-form',
+        'comment-list',
+        'gallery',
+        'caption',
+    ) );
 
-	/*
-	 * Enable support for Post Formats.
-	 *
-	 * See: https://codex.wordpress.org/Post_Formats
-	 */
-	add_theme_support( 'post-formats', array(
-		'aside',
-		'image',
-		'video',
-		'quote',
-		'link',
-		'gallery',
-		'status',
-		'audio',
-		'chat',
-	) );
+    /*
+     * Enable support for Post Formats.
+     *
+     * See: https://codex.wordpress.org/Post_Formats
+     */
+    add_theme_support( 'post-formats', array(
+        'aside',
+        'image',
+        'video',
+        'quote',
+        'link',
+        'gallery',
+        'status',
+        'audio',
+        'chat',
+    ) );
 
-	/*
-	 * This theme styles the visual editor to resemble the theme style,
-	 * specifically font, colors, icons, and column width.
-	 */
-	add_editor_style( array( 'css/editor-style.css', twentysixteen_fonts_url() ) );
+    /*
+     * This theme styles the visual editor to resemble the theme style,
+     * specifically font, colors, icons, and column width.
+     */
+    add_editor_style( array( 'css/editor-style.css', twentysixteen_fonts_url() ) );
 
-	// Indicate widget sidebars can use selective refresh in the Customizer.
-	add_theme_support( 'customize-selective-refresh-widgets' );
+    // Indicate widget sidebars can use selective refresh in the Customizer.
+    add_theme_support( 'customize-selective-refresh-widgets' );
 }
 endif; // twentysixteen_setup
 add_action( 'after_setup_theme', 'twentysixteen_setup' );
@@ -140,7 +299,7 @@ add_action( 'after_setup_theme', 'twentysixteen_setup' );
  * @since Twenty Sixteen 1.0
  */
 function twentysixteen_content_width() {
-	$GLOBALS['content_width'] = apply_filters( 'twentysixteen_content_width', 840 );
+    $GLOBALS['content_width'] = apply_filters( 'twentysixteen_content_width', 840 );
 }
 add_action( 'after_setup_theme', 'twentysixteen_content_width', 0 );
 
@@ -152,35 +311,35 @@ add_action( 'after_setup_theme', 'twentysixteen_content_width', 0 );
  * @since Twenty Sixteen 1.0
  */
 function twentysixteen_widgets_init() {
-	register_sidebar( array(
-		'name'          => __( 'Sidebar', 'twentysixteen' ),
-		'id'            => 'sidebar-1',
-		'description'   => __( 'Add widgets here to appear in your sidebar.', 'twentysixteen' ),
-		'before_widget' => '<section id="%1$s" class="widget %2$s">',
-		'after_widget'  => '</section>',
-		'before_title'  => '<h2 class="widget-title">',
-		'after_title'   => '</h2>',
-	) );
+    register_sidebar( array(
+        'name'          => __( 'Sidebar', 'twentysixteen' ),
+        'id'            => 'sidebar-1',
+        'description'   => __( 'Add widgets here to appear in your sidebar.', 'twentysixteen' ),
+        'before_widget' => '<section id="%1$s" class="widget %2$s">',
+        'after_widget'  => '</section>',
+        'before_title'  => '<h2 class="widget-title">',
+        'after_title'   => '</h2>',
+    ) );
 
-	register_sidebar( array(
-		'name'          => __( 'Content Bottom 1', 'twentysixteen' ),
-		'id'            => 'sidebar-2',
-		'description'   => __( 'Appears at the bottom of the content on posts and pages.', 'twentysixteen' ),
-		'before_widget' => '<section id="%1$s" class="widget %2$s">',
-		'after_widget'  => '</section>',
-		'before_title'  => '<h2 class="widget-title">',
-		'after_title'   => '</h2>',
-	) );
+    register_sidebar( array(
+        'name'          => __( 'Content Bottom 1', 'twentysixteen' ),
+        'id'            => 'sidebar-2',
+        'description'   => __( 'Appears at the bottom of the content on posts and pages.', 'twentysixteen' ),
+        'before_widget' => '<section id="%1$s" class="widget %2$s">',
+        'after_widget'  => '</section>',
+        'before_title'  => '<h2 class="widget-title">',
+        'after_title'   => '</h2>',
+    ) );
 
-	register_sidebar( array(
-		'name'          => __( 'Content Bottom 2', 'twentysixteen' ),
-		'id'            => 'sidebar-3',
-		'description'   => __( 'Appears at the bottom of the content on posts and pages.', 'twentysixteen' ),
-		'before_widget' => '<section id="%1$s" class="widget %2$s">',
-		'after_widget'  => '</section>',
-		'before_title'  => '<h2 class="widget-title">',
-		'after_title'   => '</h2>',
-	) );
+    register_sidebar( array(
+        'name'          => __( 'Content Bottom 2', 'twentysixteen' ),
+        'id'            => 'sidebar-3',
+        'description'   => __( 'Appears at the bottom of the content on posts and pages.', 'twentysixteen' ),
+        'before_widget' => '<section id="%1$s" class="widget %2$s">',
+        'after_widget'  => '</section>',
+        'before_title'  => '<h2 class="widget-title">',
+        'after_title'   => '</h2>',
+    ) );
 }
 add_action( 'widgets_init', 'twentysixteen_widgets_init' );
 
@@ -195,33 +354,33 @@ if ( ! function_exists( 'twentysixteen_fonts_url' ) ) :
  * @return string Google fonts URL for the theme.
  */
 function twentysixteen_fonts_url() {
-	$fonts_url = '';
-	$fonts     = array();
-	$subsets   = 'latin,latin-ext';
+    $fonts_url = '';
+    $fonts     = array();
+    $subsets   = 'latin,latin-ext';
 
-	/* translators: If there are characters in your language that are not supported by Merriweather, translate this to 'off'. Do not translate into your own language. */
-	if ( 'off' !== _x( 'on', 'Merriweather font: on or off', 'twentysixteen' ) ) {
-		$fonts[] = 'Merriweather:400,700,900,400italic,700italic,900italic';
-	}
+    /* translators: If there are characters in your language that are not supported by Merriweather, translate this to 'off'. Do not translate into your own language. */
+    if ( 'off' !== _x( 'on', 'Merriweather font: on or off', 'twentysixteen' ) ) {
+        $fonts[] = 'Merriweather:400,700,900,400italic,700italic,900italic';
+    }
 
-	/* translators: If there are characters in your language that are not supported by Montserrat, translate this to 'off'. Do not translate into your own language. */
-	if ( 'off' !== _x( 'on', 'Montserrat font: on or off', 'twentysixteen' ) ) {
-		$fonts[] = 'Montserrat:400,700';
-	}
+    /* translators: If there are characters in your language that are not supported by Montserrat, translate this to 'off'. Do not translate into your own language. */
+    if ( 'off' !== _x( 'on', 'Montserrat font: on or off', 'twentysixteen' ) ) {
+        $fonts[] = 'Montserrat:400,700';
+    }
 
-	/* translators: If there are characters in your language that are not supported by Inconsolata, translate this to 'off'. Do not translate into your own language. */
-	if ( 'off' !== _x( 'on', 'Inconsolata font: on or off', 'twentysixteen' ) ) {
-		$fonts[] = 'Inconsolata:400';
-	}
+    /* translators: If there are characters in your language that are not supported by Inconsolata, translate this to 'off'. Do not translate into your own language. */
+    if ( 'off' !== _x( 'on', 'Inconsolata font: on or off', 'twentysixteen' ) ) {
+        $fonts[] = 'Inconsolata:400';
+    }
 
-	if ( $fonts ) {
-		$fonts_url = add_query_arg( array(
-			'family' => urlencode( implode( '|', $fonts ) ),
-			'subset' => urlencode( $subsets ),
-		), 'https://fonts.googleapis.com/css' );
-	}
+    if ( $fonts ) {
+        $fonts_url = add_query_arg( array(
+            'family' => urlencode( implode( '|', $fonts ) ),
+            'subset' => urlencode( $subsets ),
+        ), 'https://fonts.googleapis.com/css' );
+    }
 
-	return $fonts_url;
+    return $fonts_url;
 }
 endif;
 
@@ -233,59 +392,9 @@ endif;
  * @since Twenty Sixteen 1.0
  */
 function twentysixteen_javascript_detection() {
-	echo "<script>(function(html){html.className = html.className.replace(/\bno-js\b/,'js')})(document.documentElement);</script>\n";
+    echo "<script>(function(html){html.className = html.className.replace(/\bno-js\b/,'js')})(document.documentElement);</script>\n";
 }
 add_action( 'wp_head', 'twentysixteen_javascript_detection', 0 );
-
-/**
- * Enqueues scripts and styles.
- *
- * @since Twenty Sixteen 1.0
- */
-function twentysixteen_scripts() {
-	// Add custom fonts, used in the main stylesheet.
-	wp_enqueue_style( 'twentysixteen-fonts', twentysixteen_fonts_url(), array(), null );
-
-	// Add Genericons, used in the main stylesheet.
-	wp_enqueue_style( 'genericons', get_template_directory_uri() . '/genericons/genericons.css', array(), '3.4.1' );
-
-	// Theme stylesheet.
-	wp_enqueue_style( 'twentysixteen-style', get_stylesheet_uri() );
-
-	// Load the Internet Explorer specific stylesheet.
-	wp_enqueue_style( 'twentysixteen-ie', get_template_directory_uri() . '/css/ie.css', array( 'twentysixteen-style' ), '20160412' );
-	wp_style_add_data( 'twentysixteen-ie', 'conditional', 'lt IE 10' );
-
-	// Load the Internet Explorer 8 specific stylesheet.
-	wp_enqueue_style( 'twentysixteen-ie8', get_template_directory_uri() . '/css/ie8.css', array( 'twentysixteen-style' ), '20160412' );
-	wp_style_add_data( 'twentysixteen-ie8', 'conditional', 'lt IE 9' );
-
-	// Load the Internet Explorer 7 specific stylesheet.
-	wp_enqueue_style( 'twentysixteen-ie7', get_template_directory_uri() . '/css/ie7.css', array( 'twentysixteen-style' ), '20160412' );
-	wp_style_add_data( 'twentysixteen-ie7', 'conditional', 'lt IE 8' );
-
-	// Load the html5 shiv.
-	wp_enqueue_script( 'twentysixteen-html5', get_template_directory_uri() . '/js/html5.js', array(), '3.7.3' );
-	wp_script_add_data( 'twentysixteen-html5', 'conditional', 'lt IE 9' );
-
-	wp_enqueue_script( 'twentysixteen-skip-link-focus-fix', get_template_directory_uri() . '/js/skip-link-focus-fix.js', array(), '20160412', true );
-
-	if ( is_singular() && comments_open() && get_option( 'thread_comments' ) ) {
-		wp_enqueue_script( 'comment-reply' );
-	}
-
-	if ( is_singular() && wp_attachment_is_image() ) {
-		wp_enqueue_script( 'twentysixteen-keyboard-image-navigation', get_template_directory_uri() . '/js/keyboard-image-navigation.js', array( 'jquery' ), '20160412' );
-	}
-
-	wp_enqueue_script( 'twentysixteen-script', get_template_directory_uri() . '/js/functions.js', array( 'jquery' ), '20160412', true );
-
-	wp_localize_script( 'twentysixteen-script', 'screenReaderText', array(
-		'expand'   => __( 'expand child menu', 'twentysixteen' ),
-		'collapse' => __( 'collapse child menu', 'twentysixteen' ),
-	) );
-}
-add_action( 'wp_enqueue_scripts', 'twentysixteen_scripts' );
 
 /**
  * Adds custom classes to the array of body classes.
@@ -296,27 +405,27 @@ add_action( 'wp_enqueue_scripts', 'twentysixteen_scripts' );
  * @return array (Maybe) filtered body classes.
  */
 function twentysixteen_body_classes( $classes ) {
-	// Adds a class of custom-background-image to sites with a custom background image.
-	if ( get_background_image() ) {
-		$classes[] = 'custom-background-image';
-	}
+    // Adds a class of custom-background-image to sites with a custom background image.
+    if ( get_background_image() ) {
+        $classes[] = 'custom-background-image';
+    }
 
-	// Adds a class of group-blog to sites with more than 1 published author.
-	if ( is_multi_author() ) {
-		$classes[] = 'group-blog';
-	}
+    // Adds a class of group-blog to sites with more than 1 published author.
+    if ( is_multi_author() ) {
+        $classes[] = 'group-blog';
+    }
 
-	// Adds a class of no-sidebar to sites without active sidebar.
-	if ( ! is_active_sidebar( 'sidebar-1' ) ) {
-		$classes[] = 'no-sidebar';
-	}
+    // Adds a class of no-sidebar to sites without active sidebar.
+    if ( ! is_active_sidebar( 'sidebar-1' ) ) {
+        $classes[] = 'no-sidebar';
+    }
 
-	// Adds a class of hfeed to non-singular pages.
-	if ( ! is_singular() ) {
-		$classes[] = 'hfeed';
-	}
+    // Adds a class of hfeed to non-singular pages.
+    if ( ! is_singular() ) {
+        $classes[] = 'hfeed';
+    }
 
-	return $classes;
+    return $classes;
 }
 add_filter( 'body_class', 'twentysixteen_body_classes' );
 
@@ -330,21 +439,21 @@ add_filter( 'body_class', 'twentysixteen_body_classes' );
  *               HEX code, empty array otherwise.
  */
 function twentysixteen_hex2rgb( $color ) {
-	$color = trim( $color, '#' );
+    $color = trim( $color, '#' );
 
-	if ( strlen( $color ) === 3 ) {
-		$r = hexdec( substr( $color, 0, 1 ).substr( $color, 0, 1 ) );
-		$g = hexdec( substr( $color, 1, 1 ).substr( $color, 1, 1 ) );
-		$b = hexdec( substr( $color, 2, 1 ).substr( $color, 2, 1 ) );
-	} else if ( strlen( $color ) === 6 ) {
-		$r = hexdec( substr( $color, 0, 2 ) );
-		$g = hexdec( substr( $color, 2, 2 ) );
-		$b = hexdec( substr( $color, 4, 2 ) );
-	} else {
-		return array();
-	}
+    if ( strlen( $color ) === 3 ) {
+        $r = hexdec( substr( $color, 0, 1 ).substr( $color, 0, 1 ) );
+        $g = hexdec( substr( $color, 1, 1 ).substr( $color, 1, 1 ) );
+        $b = hexdec( substr( $color, 2, 1 ).substr( $color, 2, 1 ) );
+    } else if ( strlen( $color ) === 6 ) {
+        $r = hexdec( substr( $color, 0, 2 ) );
+        $g = hexdec( substr( $color, 2, 2 ) );
+        $b = hexdec( substr( $color, 4, 2 ) );
+    } else {
+        return array();
+    }
 
-	return array( 'red' => $r, 'green' => $g, 'blue' => $b );
+    return array( 'red' => $r, 'green' => $g, 'blue' => $b );
 }
 
 /**
@@ -369,18 +478,18 @@ require get_template_directory() . '/inc/customizer.php';
  * @return string A source size value for use in a content image 'sizes' attribute.
  */
 function twentysixteen_content_image_sizes_attr( $sizes, $size ) {
-	$width = $size[0];
+    $width = $size[0];
 
-	840 <= $width && $sizes = '(max-width: 709px) 85vw, (max-width: 909px) 67vw, (max-width: 1362px) 62vw, 840px';
+    840 <= $width && $sizes = '(max-width: 709px) 85vw, (max-width: 909px) 67vw, (max-width: 1362px) 62vw, 840px';
 
-	if ( 'page' === get_post_type() ) {
-		840 > $width && $sizes = '(max-width: ' . $width . 'px) 85vw, ' . $width . 'px';
-	} else {
-		840 > $width && 600 <= $width && $sizes = '(max-width: 709px) 85vw, (max-width: 909px) 67vw, (max-width: 984px) 61vw, (max-width: 1362px) 45vw, 600px';
-		600 > $width && $sizes = '(max-width: ' . $width . 'px) 85vw, ' . $width . 'px';
-	}
+    if ( 'page' === get_post_type() ) {
+        840 > $width && $sizes = '(max-width: ' . $width . 'px) 85vw, ' . $width . 'px';
+    } else {
+        840 > $width && 600 <= $width && $sizes = '(max-width: 709px) 85vw, (max-width: 909px) 67vw, (max-width: 984px) 61vw, (max-width: 1362px) 45vw, 600px';
+        600 > $width && $sizes = '(max-width: ' . $width . 'px) 85vw, ' . $width . 'px';
+    }
 
-	return $sizes;
+    return $sizes;
 }
 add_filter( 'wp_calculate_image_sizes', 'twentysixteen_content_image_sizes_attr', 10 , 2 );
 
@@ -396,11 +505,11 @@ add_filter( 'wp_calculate_image_sizes', 'twentysixteen_content_image_sizes_attr'
  * @return string A source size value for use in a post thumbnail 'sizes' attribute.
  */
 function twentysixteen_post_thumbnail_sizes_attr( $attr, $attachment, $size ) {
-	if ( 'post-thumbnail' === $size ) {
-		is_active_sidebar( 'sidebar-1' ) && $attr['sizes'] = '(max-width: 709px) 85vw, (max-width: 909px) 67vw, (max-width: 984px) 60vw, (max-width: 1362px) 62vw, 840px';
-		! is_active_sidebar( 'sidebar-1' ) && $attr['sizes'] = '(max-width: 709px) 85vw, (max-width: 909px) 67vw, (max-width: 1362px) 88vw, 1200px';
-	}
-	return $attr;
+    if ( 'post-thumbnail' === $size ) {
+        is_active_sidebar( 'sidebar-1' ) && $attr['sizes'] = '(max-width: 709px) 85vw, (max-width: 909px) 67vw, (max-width: 984px) 60vw, (max-width: 1362px) 62vw, 840px';
+        ! is_active_sidebar( 'sidebar-1' ) && $attr['sizes'] = '(max-width: 709px) 85vw, (max-width: 909px) 67vw, (max-width: 1362px) 88vw, 1200px';
+    }
+    return $attr;
 }
 add_filter( 'wp_get_attachment_image_attributes', 'twentysixteen_post_thumbnail_sizes_attr', 10 , 3 );
 
@@ -413,10 +522,10 @@ add_filter( 'wp_get_attachment_image_attributes', 'twentysixteen_post_thumbnail_
  * @return array A new modified arguments.
  */
 function twentysixteen_widget_tag_cloud_args( $args ) {
-	$args['largest'] = 1;
-	$args['smallest'] = 1;
-	$args['unit'] = 'em';
-	return $args;
+    $args['largest'] = 1;
+    $args['smallest'] = 1;
+    $args['unit'] = 'em';
+    return $args;
 }
 add_filter( 'widget_tag_cloud_args', 'twentysixteen_widget_tag_cloud_args' );
 add_filter('woocommerce_checkout_fields','remove_checkout_fields');

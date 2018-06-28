@@ -66,7 +66,8 @@ if ( post_password_required() ) {
                                 </div>
                             </div>
                             <div id="regular_price"><?php echo $regular_price; ?></div>
-                            <div class="slides">                                <div id="tabs">
+                            <div class="slides">
+                                <div id="tabs">
                                 <?php custom_list_attr('variant', 1); ?>
 
 
@@ -81,8 +82,8 @@ if ( post_password_required() ) {
         //custom_list_attr('color');
     ?>
 
-                                    <?php custom_list_attr('variant', 2); ?>
-                                </div>
+            <?php custom_list_attr('variant', 2); ?>
+        </div>
     <div class="summary entry-summary">
         <?php
             /**

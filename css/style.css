@@ -292,5 +292,87 @@ body.innerpage{
     right: 0;
 }
 
+.cart .product-price .rur{
+    display: none;
+}
+
+.cart .product-subtotal .rur{
+    display: none;
+}
+
+.woocommerce table.shop_table th {
+    font-weight: 100;
+    padding: 20px 15px;
+}
+
+.cart .product-name{
+    width: 40%;
+}
+
+.cart .product-price{
+    width: 15%;
+}
+
+.cart .product-quantity{
+    width: 15%;
+}
+
+.cart .product-subtotal{
+    width: 15%;
+}
+
+.cart .product-remove{
+    width: 15%;
+}
+
+.woocommerce table.shop_table td {
+    border-top: 1px solid rgba(0,0,0,.1);
+    padding: 20px 15px;
+    vertical-align: middle;
+}
+
+div#inner .cart_item .text {
+    background: #ffffff;
+    padding: 0px;
+    min-height: unset;
+    margin: 0;
+    border: 1px solid #ccc;
+    width: 40px;
+}
+
+.cart .product-quantity .quantity{
+    display: inline-block;
+}
+
+.woocommerce form .form-row label, .woocommerce-page form .form-row label {
+    display: none;
+}
+
+#billing_first_name, #billing_address_1_field, #billing_phone, #billing_email_field, #billing_new_fild4 {
+    width: 424px;
+    height: 38px;
+    border: 1px solid #2b363c;
+    border-radius: 10px;
+    margin: 14px 0px;
+    padding: 0 10px;
+    margin-left: 35px;
+}
+
+.minus_quantity, .plus_quantity{
+    cursor: pointer;
+}
+
+#billing_email_field, #billing_address_1_field{
+    width: 407px;
+}
+
+.woocommerce form .form-row input.input-text{
+    padding: 9px 5px;
+}
+
+img.order_img {
+    margin-left: 300px;
+}
+
 
 

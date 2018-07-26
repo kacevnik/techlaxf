@@ -82,10 +82,10 @@
 	</div>
     <div class="fixed_block">
         <div class="fixed_icons">
-            <img src="img/fixed_icons.png">
+            <img src="/img/fixed_icons.png">
         </div>
         <div class="fixed_call">
-            <img src="img/fixed_call.png" id="fxcimg">
+            <img src="/img/fixed_call.png" id="fxcimg">
             <form enctype="multipart/form-data" id="mf_call" method="post" action="https://plitkatd.ru/call/?action=send.form" onsubmit="return true">
                  <ul>
                     <li>
@@ -112,7 +112,7 @@
 
                     <ul>
                         
-                           <li class=""><a href="/%D0%BA%D0%B0%D1%82%D0%B0%D0%BB%D0%BE%D0%B3/" id="top_item_catalog">Каталог
+                           <li class=""><a href="/каталог-2/" id="top_item_catalog">Каталог
 						   <div class="afnav">
                     
 

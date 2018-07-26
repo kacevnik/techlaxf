@@ -1,5 +1,10 @@
    $(document).ready(function() {
 
+        $('.wp-post-image').parent().addClass('no_link');
+        $('.no_link').click(function(event) {
+            return false;
+        });
+
         $(".woocommerce-product-gallery__wrapper div").each(function(index, value) {
             $('[data-number-img = '+ index +']').find('img').attr('src', $(this).attr('data-thumb'));
         });
@@ -13,6 +18,7 @@
         
         $('.tab_default a').click(function(event) {
             $('#variant').val($(this).html()).trigger('change');
+            $('#color').val('серый').trigger('change');
             var text = $('.entry-summary span.price').text();
             var arr = text.split('.');
             setTimeout(function(){
